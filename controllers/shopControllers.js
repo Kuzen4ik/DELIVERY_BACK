@@ -1,5 +1,16 @@
 const db = require("../db/database");
 
+const getShopController = async (req, res) => {
+  db.all("SELECT * FROM shops", [], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send(err.massage || err);
+    }
+
+    res.status(200).json(rows);
+  });
+};
+
 const postShopController = async (req, res) => {
   try {
     const { name, address, createdBy } = req.body;
@@ -11,9 +22,9 @@ const postShopController = async (req, res) => {
       (err) => {
         if (err) {
           console.log(err);
-          return res.status(500).send("Ошибка при добавлении магазина");
+          return res.status(500).send(err.massage || err);
         }
-        res.status(200).send("Магазин успешно добавлен");
+        res.status(200).send("Success");
       }
     );
   } catch (err) {
@@ -21,15 +32,33 @@ const postShopController = async (req, res) => {
   }
 };
 
-const getShopController = async (req, res) => {
-  db.all("SELECT * FROM shops", [], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).send("Ошибка при получении списка магазинов");
-    }
+const deleteShopController = async (req, res) => {
+  const { shopId } = req.params;
 
-    res.status(200).json(rows);
-  });
+  try {
+    db.run("DELETE FROM shops WHERE id = ?", shopId, (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send(err.massage || err);
+      }
+
+      db.run("DELETE FROM menu WHERE shopId = ?", shopId, (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).send(err.massage || err);
+        }
+
+        res.status(200).send("Success");
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send(err.message || err);
+  }
 };
 
-module.exports = { postShopController, getShopController };
+module.exports = {
+  postShopController,
+  getShopController,
+  deleteShopController,
+};
