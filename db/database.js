@@ -46,6 +46,14 @@ db.run(`
   )
 `);
 
+db.run(`
+CREATE TABLE IF NOT EXISTS admins (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL
+)
+`);
+
 // db.close();
 
 module.exports = db;

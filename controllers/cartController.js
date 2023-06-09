@@ -63,7 +63,6 @@ const getOrdersController = async (req, res) => {
 
     db.all(query, params, (err, rows) => {
       if (err) {
-        console.log(err);
         return res.status(500).send(err.message || err);
       }
       res.status(200).json(rows);
