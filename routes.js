@@ -27,24 +27,21 @@ const { authenticate } = require("./auth/auth");
 const router = Router();
 
 router.get("/shops", getShopController);
-router.post("/shops", postShopController);
-router.delete("/shops/:shopId", deleteShopController);
+router.post("/shops", authenticate, postShopController);
+router.delete("/shops/:shopId", authenticate, deleteShopController);
 
 router.get("/menu/:shopId", getMenuController);
-router.post("/menu/:shopId", postMenuController);
-router.delete("/menu/:menuId", deleteMenuController);
+router.post("/menu/:shopId", authenticate, postMenuController);
+router.delete("/menu/:menuId", authenticate, deleteMenuController);
 
 router.post("/orders", postOrderController);
-router.get("/orders", authenticate, getOrdersController);
+router.get("/orders", getOrdersController);
 
 router.get("/coupons", getCouponsController);
-router.post("/coupons", postCouponsController);
+router.post("/coupons", authenticate, postCouponsController);
 router.delete("/coupons/:code", deleteCouponController);
 
 router.post("/auth/register", registerController);
 router.post("/auth/login", loginController);
-
-// router.post("/admins/login", loginController);
-// router.get("/admins/register", logoutController);
 
 module.exports = router;

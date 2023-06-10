@@ -33,12 +33,10 @@ const registerController = (req, res) => {
 const loginController = (req, res) => {
   const { email, password } = req.body;
 
-  // Проверяем, что оба поля заполнены
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
   }
 
-  // Проверяем, что администратор с таким email существует
   const query = "SELECT * FROM admins WHERE email = ?";
   db.get(query, [email], (error, row) => {
     if (error) {
@@ -48,7 +46,6 @@ const loginController = (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Проверяем пароль
     if (!row.password) {
       return res.status(500).json({ message: "Internal server error" });
     }
@@ -57,19 +54,14 @@ const loginController = (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // bcrypt.compare(password, row.password, (err, result) => {
-    //   if (err) {
-    //   }
-    //   if (!result) {
-    //   }
-
-    // Создаем JSON Web Token (JWT)
     const token = jwt.sign({ email: row.email }, "your-secret-key", {
       expiresIn: "1h",
     });
 
-    return res.status(200).json({ message: "Login successful", token });
-    // });
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+    });
   });
 };
 
