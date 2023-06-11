@@ -21,6 +21,8 @@ const {
 const {
   registerController,
   loginController,
+  getAdminsController,
+  deleteAdminsController,
 } = require("./controllers/authControllers");
 const { authenticate } = require("./auth/auth");
 
@@ -43,5 +45,7 @@ router.delete("/coupons/:code", deleteCouponController);
 
 router.post("/auth/register", registerController);
 router.post("/auth/login", loginController);
+router.get("/admins", authenticate, getAdminsController);
+router.delete("/admins/:id", authenticate, deleteAdminsController);
 
 module.exports = router;

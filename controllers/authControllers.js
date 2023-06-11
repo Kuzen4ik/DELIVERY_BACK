@@ -65,4 +65,35 @@ const loginController = (req, res) => {
   });
 };
 
-module.exports = { registerController, loginController };
+const getAdminsController = async (req, res) => {
+  db.all("SELECT * FROM admins", (err, rows) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send("Error when receiving coupons");
+    }
+    const admins = [];
+    rows.forEach((admin) => {
+      admins.push({ id: admin.id, email: admin.email });
+    });
+    res.status(200).json(admins);
+  });
+};
+
+const deleteAdminsController = async (req, res) => {
+  const { id } = req.params;
+  db.run("DELETE FROM admins WHERE id = ?", id, (err) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send(err.massage || err);
+    }
+
+    res.status(200).send("Success");
+  });
+};
+
+module.exports = {
+  registerController,
+  loginController,
+  getAdminsController,
+  deleteAdminsController,
+};
