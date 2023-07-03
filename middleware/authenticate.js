@@ -8,7 +8,7 @@ const authenticate = (req, res, next) => {
     return res.status(401).send("Unauthorized");
   }
 
-  jwt.verify(token, "your-secret-key", (err, user) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN_PRIVATE_KEY, (err, user) => {
     if (err) {
       return res.status(403).send("Forbidden");
     }

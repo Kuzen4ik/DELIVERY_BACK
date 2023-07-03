@@ -1,99 +1,77 @@
-const db = require("../db/database");
 const jwt = require("jsonwebtoken");
+const { createAdmin, login } = require("../service/adminsService");
 
-const registerController = (req, res) => {
+const accessTokenSecret = process.env.ACCESS_TOKEN_PRIVATE_KEY;
+const refreshTokenSecret = process.env.REFRESH_TOKEN_PRIVATE_KEY;
+
+const registerController = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
   }
 
-  const checkQuery = "SELECT * FROM admins WHERE email = ?";
-  db.get(checkQuery, [email], (error, row) => {
-    if (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-    if (row) {
-      return res
-        .status(400)
-        .json({ message: "Admin with this email already exists" });
+  try {
+    const newAdmin = await createAdmin(email, password);
+    res.send(newAdmin);
+  } catch (err) {
+    let message = "Internal server error";
+    if (err?.message || err) {
+      message = err?.message || err;
     }
 
-    const insertQuery = "INSERT INTO admins (email, password) VALUES (?, ?)";
-    db.run(insertQuery, [email, password], function (error) {
-      if (error) {
-        return res.status(500).json({ message: "Internal server error" });
+    res.status(400).send({ message });
+  }
+};
+
+const loginController = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  try {
+    const result = await login(email, password);
+    res.send(result);
+  } catch (err) {
+    let message = "Internal server error";
+    if (err?.message || err) {
+      message = err?.message || err;
+    }
+
+    res.status(400).send({ message });
+  }
+};
+
+const postRefreshController = (req, res) => {
+  const { refresh } = req.body;
+  if (!refresh) {
+    return res.status(400).json({ message: "Refresh token is required" });
+  }
+
+  try {
+    const decoded = jwt.verify(refresh, refreshTokenSecret);
+
+    const accessToken = jwt.sign(
+      { id: decoded.id, email: decoded.email },
+      accessTokenSecret,
+      {
+        expiresIn: "30s",
       }
-      return res.status(201).json({ message: "Admin registered successfully" });
+    );
+
+    res.status(200).send({
+      access: accessToken,
+      admin: { id: decoded.id, email: decoded.email },
     });
-  });
-};
-
-const loginController = (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid refresh token" });
   }
-
-  const query = "SELECT * FROM admins WHERE email = ?";
-  db.get(query, [email], (error, row) => {
-    if (error) {
-      return res.status(500).json({ message: "Internal server error" });
-    }
-    if (!row) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    if (!row.password) {
-      return res.status(500).json({ message: "Internal server error" });
-    }
-
-    if (password !== row.password) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const token = jwt.sign({ email: row.email }, "your-secret-key", {
-      expiresIn: "1h",
-    });
-
-    return res.status(200).json({
-      message: "Login successful",
-      token,
-    });
-  });
-};
-
-const getAdminsController = async (req, res) => {
-  db.all("SELECT * FROM admins", (err, rows) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send("Error when receiving coupons");
-    }
-    const admins = [];
-    rows.forEach((admin) => {
-      admins.push({ id: admin.id, email: admin.email });
-    });
-    res.status(200).json(admins);
-  });
-};
-
-const deleteAdminsController = async (req, res) => {
-  const { id } = req.params;
-  db.run("DELETE FROM admins WHERE id = ?", id, (err) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send(err.massage || err);
-    }
-
-    res.status(200).send("Success");
-  });
 };
 
 module.exports = {
   registerController,
   loginController,
-  getAdminsController,
-  deleteAdminsController,
+  postRefreshController,
 };
