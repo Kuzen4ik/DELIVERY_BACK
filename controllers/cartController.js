@@ -13,7 +13,7 @@ const postOrderController = async (req, res) => {
       function (err) {
         if (err) {
           console.log(err);
-          return res.status(500).send(err.message || err);
+          return res.status(500).send(err?.message || err);
         }
 
         const orderId = this.lastID;
@@ -33,7 +33,7 @@ const postOrderController = async (req, res) => {
     );
   } catch (err) {
     console.log(err);
-    res.status(400).send(err.message || err);
+    res.status(400).send(err?.message || err);
   }
 };
 
@@ -63,13 +63,13 @@ const getOrdersController = async (req, res) => {
 
     db.all(query, params, (err, rows) => {
       if (err) {
-        return res.status(500).send(err.message || err);
+        return res.status(500).send(err?.message || err);
       }
       res.status(200).json(rows);
     });
   } catch (err) {
     console.log(err);
-    res.status(400).send(err.message || err);
+    res.status(400).send(err?.message || err);
   }
 };
 
